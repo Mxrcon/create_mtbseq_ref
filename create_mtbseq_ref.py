@@ -44,7 +44,7 @@ create_fasta(output_name, sample_sequence)
 feature_list = []
 for seq_record in SeqIO.parse(gbk_file , 'genbank'):
     for feature in seq_record.features:
-        if feature.type == "CDS":
+        if feature.type == ["CDS","rRNA","tRNA"]:
             if "gene" in feature.qualifiers:
                 feature_gene = feature.qualifiers['gene'][0]
             else:
@@ -56,47 +56,29 @@ for seq_record in SeqIO.parse(gbk_file , 'genbank'):
             else: 
                 feature_start,feature_end = feature.location.start+1, feature.location.end
             
+            if feature.type == "CDS":
+                feature_product = feature.qualifiers['product'][0]
+            else: 
+                feature_product = feature.type
+            
+            if feature.type =="rRNA":
+                feature_function= "rRNA"
+            else: 
+                feature_function = "-"
             plain_feature = [feature.qualifiers['locus_tag'][0],
                              feature_gene,
                              str(feature_start),
                              str(feature_end),
                              frame,
-                             feature.qualifiers['product'][0],
-                             '-',
+                             feature_product,
+                             feature_function,
                              '-',
                              '-',
                              'status 3',
                              'annotated',
-                             'CDS',
+                             feature.type,
                              '5',
                              '6'                                                
-                    ]
-            feature_list.append("   ".join(plain_feature))            
-        if feature.type in ["rRNA","tRNA"]:
-            frame = get_frame(feature.location.start+1,feature.location.end,feature.location.strand)
-            if int(frame) <0:
-                feature_start = feature.location.end
-                feature_end = feature.location.start+1
-            else:
-                feature_start,feature_end = feature.location.start+1, feature.location.end
-            if feature.type =="rRNA":
-                feature_product = "rRNA"
-            else: 
-                feature_product = "-"
-            plain_feature = [feature.qualifiers['locus_tag'][0],
-                             '-',
-                             str(feature_start),
-                             str(feature_end),
-                             frame,
-                             feature.type,
-                             feature_product,
-                             '-',
-                             '-',
-                             'status 3',
-                             'annotated',
-                             feature.type,
-                             '5',
-                             '6'
                     ]
             feature_list.append("   ".join(plain_feature))
         
